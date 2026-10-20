@@ -47,11 +47,19 @@ const AnimatedBlobs = () => {
 const CustomCursor = () => {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
+
+  const springX = useSpring(mouseX, { stiffness: 500, damping: 150 });
+  const springY = useSpring(mouseY, { stiffness: 500, damping: 150 });
+
+  const dotX = useSpring(mouseX, { stiffness: 1000, damping: 200 });
+  const dotY = useSpring(mouseY, { stiffness: 1000, damping: 200 });
+
+  const trailX = useSpring(mouseX, { stiffness: 300, damping: 100 });
+  const trailY = useSpring(mouseY, { stiffness: 300, damping: 100 });
+
   const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
     const handleMouseMove = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
@@ -59,16 +67,14 @@ const CustomCursor = () => {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest('a, button, [data-cursor="hover"]')) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
+      setIsHovering(
+        !!target.closest('a, button, [data-cursor="hover"]')
+      );
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseover', handleMouseOver);
-    
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
@@ -81,36 +87,35 @@ const CustomCursor = () => {
       <motion.div
         className="fixed top-0 left-0 w-3 h-3 bg-brass rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:block"
         style={{
-          x: useSpring(mouseX, { stiffness: 1000, damping: 200 }),
-          y: useSpring(mouseY, { stiffness: 1000, damping: 200 }),
+          x: dotX,
+          y: dotY,
           translateX: '-50%',
           translateY: '-50%',
         }}
       />
-      
+
       {/* Outer cursor ring */}
       <motion.div
-        className={`fixed top-0 left-0 rounded-full pointer-events-none z-[9998] mix-blend-difference hidden md:block border border-brass/50 ${
-          isHovering ? 'w-16 h-16' : 'w-8 h-8'
-        }`}
+        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9998] mix-blend-difference hidden md:block border border-brass/50"
         style={{
-          x: useSpring(mouseX, { stiffness: 500, damping: 150 }),
-          y: useSpring(mouseY, { stiffness: 500, damping: 150 }),
+          x: springX,
+          y: springY,
           translateX: '-50%',
           translateY: '-50%',
-          transition: {
-            width: { duration: 0.2 },
-            height: { duration: 0.2 }
-          }
         }}
+        animate={{
+          width: isHovering ? 64 : 32,
+          height: isHovering ? 64 : 32,
+        }}
+        transition={{ duration: 0.2 }}
       />
-      
+
       {/* Cursor trail effect */}
       <motion.div
         className="fixed top-0 left-0 w-2 h-2 bg-brass/30 rounded-full pointer-events-none z-[9997] hidden md:block"
         style={{
-          x: useSpring(mouseX, { stiffness: 300, damping: 100 }),
-          y: useSpring(mouseY, { stiffness:300, damping: 100 }),
+          x: trailX,
+          y: trailY,
           translateX: '-50%',
           translateY: '-50%',
         }}
@@ -118,6 +123,79 @@ const CustomCursor = () => {
     </>
   );
 };
+// const CustomCursor = () => {
+//   const mouseX = useMotionValue(-100);
+//   const mouseY = useMotionValue(-100);
+//   const [isHovering, setIsHovering] = useState(false);
+//   const [isVisible, setIsVisible] = useState(false);
+
+//   useEffect(() => {
+//     setIsVisible(true);
+//     const handleMouseMove = (e: MouseEvent) => {
+//       mouseX.set(e.clientX);
+//       mouseY.set(e.clientY);
+//     };
+
+//     const handleMouseOver = (e: MouseEvent) => {
+//       const target = e.target as HTMLElement;
+//       if (target.closest('a, button, [data-cursor="hover"]')) {
+//         setIsHovering(true);
+//       } else {
+//         setIsHovering(false);
+//       }
+//     };
+
+//     window.addEventListener('mousemove', handleMouseMove);
+//     window.addEventListener('mouseover', handleMouseOver);
+    
+//     return () => {
+//       window.removeEventListener('mousemove', handleMouseMove);
+//       window.removeEventListener('mouseover', handleMouseOver);
+//     };
+//   }, [mouseX, mouseY]);
+
+//   return (
+//     <>
+//       {/* Main cursor dot */}
+//       <motion.div
+//         className="fixed top-0 left-0 w-3 h-3 bg-brass rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:block"
+//         style={{
+//           x: useSpring(mouseX, { stiffness: 1000, damping: 200 }),
+//           y: useSpring(mouseY, { stiffness: 1000, damping: 200 }),
+//           translateX: '-50%',
+//           translateY: '-50%',
+//         }}
+//       />
+      
+//       {/* Outer cursor ring */}
+//       <motion.div
+//         className={`fixed top-0 left-0 rounded-full pointer-events-none z-[9998] mix-blend-difference hidden md:block border border-brass/50 ${
+//           isHovering ? 'w-16 h-16' : 'w-8 h-8'
+//         }`}
+//         style={{
+//           x: useSpring(mouseX, { stiffness: 500, damping: 150 }),
+//           y: useSpring(mouseY, { stiffness: 500, damping: 150 }),
+//           translateX: '-50%',
+//           translateY: '-50%',
+//           transition: {
+//             duration: 0.2
+//           }
+//         }}
+//       />
+      
+//       {/* Cursor trail effect */}
+//       <motion.div
+//         className="fixed top-0 left-0 w-2 h-2 bg-brass/30 rounded-full pointer-events-none z-[9997] hidden md:block"
+//         style={{
+//           x: useSpring(mouseX, { stiffness: 300, damping: 100 }),
+//           y: useSpring(mouseY, { stiffness:300, damping: 100 }),
+//           translateX: '-50%',
+//           translateY: '-50%',
+//         }}
+//       />
+//     </>
+//   );
+// };
 
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
